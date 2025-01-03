@@ -34,9 +34,10 @@ def test_process_pdf_wrong_file_type(client):
 
 def test_process_pdf_empty_pdf(client):
     """测试空PDF文件"""
-    # 创建空PDF文件
+    # 创建一个只有一个空白页面的PDF文件
     import fitz
     doc = fitz.open()
+    doc.new_page()  # 添加一个空白页面
     pdf_bytes = doc.write()
     files = {"file": ("test.pdf", io.BytesIO(pdf_bytes), "application/pdf")}
     
