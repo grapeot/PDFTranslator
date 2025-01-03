@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>PDF 处理器</title>
+    <style>
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", "SimSun", Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-form {
+            background: white;
+            border: 2px dashed #ccc;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-form:hover {
+            border-color: #007bff;
+        }
+        .upload-form h2 {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .file-input-wrapper {
+            margin: 20px 0;
+            position: relative;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: left;
+            color: #666;
+        }
+        .instructions h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        .instructions ul {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 10px 0;
+        }
+        /* 添加结果显示相关的样式 */
+        #results {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .page {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .page-section {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .page-section h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .page-content {
+            position: relative;
+            width: 100%;
+            padding-top: 141.4%; /* A4 aspect ratio (1:√2) as default */
+            background: #fff;
+            margin: 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            overflow: hidden;  /* 防止图片溢出 */
+        }
+        .page-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .text-block {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 3px;
+            line-height: 1.5;
+            font-size: 14px;
+            z-index: 2;
+        }
+        .image-block {
+            position: absolute;
+            z-index: 1;
+        }
+        .image-block img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        #processing-status {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+            display: none;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF 翻译</h1>
+    <div class="upload-form">
+        <h2>上传 PDF 文件</h2>
+        <div class="file-input-wrapper">
+            <input type="file" id="pdfFile" accept=".pdf" required>
+        </div>
+        <button onclick="uploadPDF()">处理文档</button>
+        <div class="instructions">
+            <h3>功能说明</h3>
+            <ul>
+                <li>支持单页或多页 PDF 文档处理</li>
+                <li>自动识别文档布局和图片区域</li>
+                <li>提供中文翻译，保持原文排版格式</li>
+                <li>处理结果将实时显示在下方</li>
+            </ul>
+        </div>
+        <!-- 添加广告部分 -->
+        <div class="advertisement" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff;">
+            <p style="margin: 0; color: #666;">
+                这个小工具由鸭哥耗时2小时开发完成。想要像鸭哥一样利用AI实现10倍的生产力？欢迎报名我们的
+                <a href="https://maven.com/kedaibiao/genai/" target="_blank" style="color: #007bff; text-decoration: none;">在线课程</a>
+                或者
+                <a href="https://www.superlinear.academy/c/ai/" target="_blank" style="color: #007bff; text-decoration: none;">离线课程</a>
+            </p>
+        </div>
+    </div>
+    <div id="results"></div>
+    <div id="processing-status" style="text-align: center; color: #666; margin: 20px 0; display: none;">
+        正在处理中
+        <div class="spinner"></div>
+        <div style="font-size: 0.9em; margin-top: 10px; color: #888;">处理时间可能较长，请耐心等待</div>
+    </div>
+    <!-- Debug info section removed
+    <div id="debug-info" style="margin-top: 20px; padding: 10px; background: #f0f0f0; display: none;">
+        <h3>Debug Information</h3>
+        <pre id="debug-content"></pre>
+    </div>
+    -->
+
+    <script>
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('请选择一个PDF文件');
+                return;
+            }
+
+            console.log('Starting to upload file:', file.name);
+            console.log('File size:', file.size / 1024 / 1024, 'MB');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const statusDiv = document.getElementById('processing-status');
+            const resultsDiv = document.getElementById('results');
+            statusDiv.style.display = 'block';
+            resultsDiv.innerHTML = '';
+
+            try {
+                console.log('Sending request to server...');
+                const response = await fetch('/pdf/process-pdf/', {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log('Received response:', response.status);
+
+                if (response.status === 413) {
+                    statusDiv.style.display = 'none';
+                    alert('文件太大，超过服务器限制。请使用小于50MB的PDF文件。');
+                    return;
+                }
+
+                let buffer = '';
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const {value, done} = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, {stream: true});
+                    
+                    // Process complete events from buffer
+                    let newlineIndex;
+                    while ((newlineIndex = buffer.indexOf('\n\n')) >= 0) {
+                        const event = buffer.slice(0, newlineIndex);
+                        buffer = buffer.slice(newlineIndex + 2);
+                        
+                        if (event.startsWith('data: ')) {
+                            try {
+                                console.log('Processing event length:', event.length);
+                                const jsonStr = event.slice(6);
+                                const data = JSON.parse(jsonStr);
+                            
+                                if (data.error) {
+                                    statusDiv.style.display = 'none';
+                                    alert('处理出错: ' + data.error);
+                                    break;
+                                }
+                                
+                                if (data.end) {
+                                    statusDiv.style.display = 'none';
+                                    console.log('处理完成');
+                                    break;
+                                }
+
+                                if (data.html) {
+                                    resultsDiv.insertAdjacentHTML('beforeend', data.html);
+                                    
+                                    /* Debug information removed
+                                    if (data.debug) {
+                                        const debugDiv = document.getElementById('debug-info');
+                                        const debugContent = document.getElementById('debug-content');
+                                        debugDiv.style.display = 'block';
+                                        debugContent.textContent = JSON.stringify(data.debug, null, 2);
+                                    }
+                                    */
+                                }
+                            } catch (error) {
+                                console.error('Error parsing JSON:', error);
+                                statusDiv.style.display = 'none';
+                                alert('处理PDF时发生错误');
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error details:', error);
+                statusDiv.style.display = 'none';
+                alert('处理PDF时发生错误: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 
