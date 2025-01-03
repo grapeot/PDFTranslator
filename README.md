@@ -36,7 +36,7 @@ PDF Translator 是一个智能PDF文档翻译工具，它能够将PDF文档从�
 
 1. 克隆代码库：
 ```bash
-git clone git@github.com:grapeot/PDFTranslator.git
+git clone https://github.com/grapeot/PDFTranslator.git
 cd PDFTranslator
 ```
 
@@ -96,20 +96,32 @@ docker run -d -p 8000:8000 -e ANTHROPIC_API_KEY="your-api-key" pdf-translator
 - `index.html`: Web界面前端
 - `static/`: 静态资源目录
 - `requirements.txt`: 项目依赖文件
-- `launch_pdf_translator.sh`: 启动脚本
-- `sync.sh`: 同步脚本
+- `tests/`: 单元测试目录
 
 ### 开发环境设置
 
 1. 按照上述部署步骤设置基本环境
 2. 安装开发依赖：
 ```bash
-pip install pytest black flake8
+pip install pytest pytest-asyncio pytest-cov black flake8
 ```
 
 3. 设置pre-commit hooks（推荐）：
 ```bash
 pre-commit install
+```
+
+### 运行测试
+
+```bash
+# 运行所有测试
+pytest
+
+# 运行测试并生成覆盖率报告
+pytest --cov=. tests/
+
+# 运行特定测试文件
+pytest tests/test_pdf_processor.py
 ```
 
 ### 主要组件
@@ -129,6 +141,7 @@ pre-commit install
 - 添加新功能时确保更新相应的文档
 - 提交代码前运行测试套件
 - 保持代码简洁，添加必要的注释
+- 新功能需要包含相应的单元测试
 
 ### 常见问题解决
 

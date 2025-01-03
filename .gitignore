@@ -36,6 +36,8 @@ py310/
 static/
 *.pdf
 .env
+launch_pdf_translator.sh
+sync.sh
 
 # System
 .DS_Store
